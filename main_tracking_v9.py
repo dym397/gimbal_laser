@@ -1,3 +1,4 @@
+import random
 import socket
 import threading
 import time
@@ -26,8 +27,8 @@ LASER_PORT = "COM4"
 
 IMG_W = 3840.0
 IMG_H = 2160.0
-FOV_X = 90.0
-FOV_Y = 50.0
+FOV_X = 17.5
+FOV_Y = 9.9
 DEG_PER_PIXEL_X = FOV_X / IMG_W
 DEG_PER_PIXEL_Y = FOV_Y / IMG_H
 
@@ -167,7 +168,140 @@ def laser_thread_mock():
             # 模拟激光测距
             shared_state.latest_dist = 52.5 
         time.sleep(0.05)
+import numpy as np
+from scipy.optimize import linear_sum_assignment
 
+# ==========================================
+# 新增模块 1：角度计算工具
+# ==========================================
+def angular_diff(target, source):
+    """计算两个绝对角度之间的最短物理距离 (-180 到 180度)"""
+    return (target - source + 180.0) % 360.0 - 180.0
+
+def ui_to_ctrl_angles(ui_az, ui_el):
+    """将绝对角度转为云台控制角度 (复用原先 calculate_angles 里的逻辑)"""
+    rel_az = ui_az
+    if rel_az > 180.0:
+        rel_az -= 360.0
+    ctrl_az = 90.0 + rel_az
+    ctrl_el = ui_el
+    if ctrl_az < 0.0: ctrl_az = 0.0
+    if ctrl_az > 350.0: ctrl_az = 350.0
+    return ctrl_az, ctrl_el
+
+# ==========================================
+# 新增模块 2：单目标卡尔曼追踪器 (AngleTracker)
+# ==========================================
+class Track:
+    _id_count = 0
+    def __init__(self, ui_az, ui_el):
+        Track._id_count += 1
+        self.id = Track._id_count
+        
+        # 状态: [方位角, 俯仰角, 方位角速度, 俯仰角速度]
+        self.state = np.array([ui_az, ui_el, 0.0, 0.0])
+        
+        self.hit_streak = 1        # 连续命中次数 (用于建轨确认)
+        self.time_since_update = 0 # 连续丢失次数 (用于注销)
+        
+        # 简化版卡尔曼增益 (Alpha-Beta 滤波参数)
+        self.alpha = 0.6  # 位置信任度
+        self.beta = 0.4   # 速度信任度
+
+    def predict(self, dt):
+        """盲猜未来状态"""
+        # 位置 = 老位置 + 速度 * 时间
+        pred_az = (self.state[0] + self.state[2] * dt) % 360.0
+        pred_el = self.state[1] + self.state[3] * dt
+        self.state[0] = pred_az
+        self.state[1] = pred_el
+        self.time_since_update += 1 # 默认加1，如果匹配上了会在 update 里清零
+
+    def update(self, meas_az, meas_el, dt):
+        """融合真实测量值，修正速度和位置"""
+        self.time_since_update = 0
+        self.hit_streak += 1
+        
+        if dt <= 0: return
+
+        # 计算残差 (注意方位角的 360 度跨界)
+        res_az = angular_diff(meas_az, self.state[0])
+        res_el = meas_el - self.state[1]
+        
+        # 更新速度
+        self.state[2] = self.state[2] + self.beta * (res_az / dt)
+        self.state[3] = self.state[3] + self.beta * (res_el / dt)
+        
+        # 更新位置
+        self.state[0] = (self.state[0] + self.alpha * res_az) % 360.0
+        self.state[1] = self.state[1] + self.alpha * res_el
+
+    def get_future_position(self, dt_delay):
+        """打提前量：获取未来预测角度"""
+        fut_az = (self.state[0] + self.state[2] * dt_delay) % 360.0
+        fut_el = self.state[1] + self.state[3] * dt_delay
+        return fut_az, fut_el
+
+# ==========================================
+# 新增模块 3：多目标调度大脑 (MultiTargetTracker)
+# ==========================================
+class MultiTargetTracker:
+    def __init__(self, max_lost_frames=10, distance_threshold=20.0):
+        self.tracks = []
+        self.max_lost_frames = max_lost_frames
+        self.distance_threshold = distance_threshold # 最大匹配角度差
+
+    def update(self, measurements, dt):
+        """
+        measurements: 当前帧所有检测到的绝对角度列表 [[az1, el1], [az2, el2], ...]
+        dt: 距离上一帧经过的时间(秒)
+        """
+        # 1. 预测所有已有 Track 的新位置
+        for track in self.tracks:
+            track.predict(dt)
+            
+        # 如果当前帧没检测到东西，直接清理丢失目标并返回
+        if len(measurements) == 0:
+            self.tracks = [t for t in self.tracks if t.time_since_update < self.max_lost_frames]
+            return self.tracks
+
+        if len(self.tracks) == 0:
+            # 全是新目标
+            for meas in measurements:
+                self.tracks.append(Track(meas[0], meas[1]))
+            return self.tracks
+
+        # 2. 计算代价矩阵 (角度距离)
+        cost_matrix = np.zeros((len(self.tracks), len(measurements)))
+        for t, track in enumerate(self.tracks):
+            for m, meas in enumerate(measurements):
+                diff_az = angular_diff(meas[0], track.state[0])
+                diff_el = meas[1] - track.state[1]
+                distance = np.sqrt(diff_az**2 + diff_el**2)
+                cost_matrix[t, m] = distance
+
+        # 3. 匈牙利匹配
+        track_indices, meas_indices = linear_sum_assignment(cost_matrix)
+
+        # 4. 更新匹配成功的 Track
+        unmatched_measurements = set(range(len(measurements)))
+        for t_idx, m_idx in zip(track_indices, meas_indices):
+            if cost_matrix[t_idx, m_idx] < self.distance_threshold:
+                self.tracks[t_idx].update(measurements[m_idx][0], measurements[m_idx][1], dt)
+                unmatched_measurements.discard(m_idx)
+            else:
+                # 距离太远，不认为是同一个目标
+                pass
+
+        # 5. 为没匹配上的坐标创建新 Track
+        for m_idx in unmatched_measurements:
+            meas = measurements[m_idx]
+            self.tracks.append(Track(meas[0], meas[1]))
+
+        # 6. 删除丢失太久的 Track
+        self.tracks = [t for t in self.tracks if t.time_since_update < self.max_lost_frames]
+
+        return self.tracks
 # ==========================================
 # 4. 核心解算 V8 (修改版：基准水平90度)
 # ==========================================
@@ -187,32 +321,7 @@ def calculate_angles(cam_key, cx, cy, cfg=None):
     ui_az = (base_az + offset_az) % 360.0
     ui_el = base_el + offset_el
 
-    # ========================================================
-    # [修改点] 云台控制角度解算
-    # 目标：以水平90度、垂直0度为基准中心
-    # ========================================================
-    
-    # A. 将 0~360 的绝对角度转换为相对于正前方(0度)的 -180~180 角度
-    #    例如：350度 -> -10度(左); 10度 -> 10度(右)
-    rel_az = ui_az
-    if rel_az > 180.0:
-        rel_az -= 360.0
-        
-    # B. 应用云台基准偏移
-    #    基准为90度。左转(负值)则减，右转(正值)则加。
-    #    公式：Control = 90 + Relative_Angle
-    ctrl_az = 90.0 + rel_az
-    
-    #    垂直基准为0度，直接透传绝对仰角即可 (假设云台0度即平视)
-    ctrl_el = ui_el
-
-    # C. 边界与负数保护
-    #    云台只能接受正数，且您提到物理上保证了 90-x > 0
-    #    这里加个max/min作为双重保险
-    if ctrl_az < 0.0: ctrl_az = 0.0
-    if ctrl_az > 350.0: ctrl_az = 350.0
-
-    return ui_az, ui_el, ctrl_az, ctrl_el
+    return ui_az, ui_el
 # ==========================================
 # 5. 云台到位检测 (针对真实串口优化)
 # ==========================================
@@ -255,12 +364,11 @@ def wait_gimbal_settle(gimbal, target_el, target_az, threshold=0.5, timeout=0.8)
     return False
 
 # ==========================================
-# 6. 主逻辑 V8
+# 6. 主逻辑 V9 (多目标预测与云台调度)
 # ==========================================
 def main():
     sender = UISender(UI_IP, UI_PORT)
     
-    # --- 替换 Mock，使用真实驱动 ---
     print(f"[Init] Connecting to Gimbal at {GIMBAL_PORT}...")
     gimbal = GT06ZAdapter(port=GIMBAL_PORT)
     
@@ -271,20 +379,36 @@ def main():
     if not gimbal.wait_ready():
         print("[Warning] Gimbal not ready instantly, wait...")
 
+    #start background threads for network and laser
     threading.Thread(target=rk3588_thread, daemon=True).start()
     threading.Thread(target=laser_thread_mock, daemon=True).start()
     
-    print("=== System V9.0 (GT06Z Real Driver) Running ===")
+    print("=== System V9.0 (Predictive Tracking & Scheduling) Running ===")
 
-    master_ctrl_az = None
-    master_ctrl_el = None
-    master_laser_dist = 0.0
+    # 初始化追踪大脑
+    tracker = MultiTargetTracker(max_lost_frames=10, distance_threshold=20.0)
+    
+    # 状态机与调度变量
+    master_id = None
+    lock_timer = 0.0
+    LOCK_DURATION = 1.5      # 锁定目标的最长驻留时间
+    PREDICT_DELAY = 0.4      # 系统与物理响应总延迟 (打提前量)
+    CONFIRM_HITS = 3         # 连续追踪多少帧才确认为合法目标
+    MAX_DT = 0.5             # Clamp dt to avoid model divergence
+    
+    last_time = time.time()
 
     while True:
         try:
+            # --- 1. 获取 UDP 数据 (如果有) ---
             if not packet_queue:
-                time.sleep(0.001)
+                time.sleep(0.005) # 稍微让出 CPU
                 continue
+            curr_time = time.time()
+            dt = curr_time - last_time
+            if dt > MAX_DT:
+                dt = MAX_DT
+            last_time = curr_time
             
             while len(packet_queue) > 1: packet_queue.popleft()
             pkg = packet_queue.popleft()
@@ -294,72 +418,93 @@ def main():
             raw_objs = pkg.get("objs", [])
 
             logic_id, cfg = get_camera_params(board_str, cam_idx)
-            if logic_id is None: continue # 硬件映射失败则跳过
+            if logic_id is None: continue 
            
-            master_ctrl_az = None
-            master_ctrl_el = None
-            master_laser_dist = 0.0
-            
-            for t_id, obj_item in enumerate(raw_objs):
-                if isinstance(obj_item, dict):
-                    rect = obj_item.get("box", [])
-                else:
-                    rect = obj_item
-                
+            # --- 2. 坐标解析为绝对角度 ---
+            current_measurements = []
+            for obj_item in raw_objs:
+                if isinstance(obj_item, dict): rect = obj_item.get("box", [])
+                else: rect = obj_item
                 if len(rect) < 4: continue
                 
                 cx = (rect[0] + rect[2]) / 2.0
                 cy = (rect[1] + rect[3]) / 2.0
                 
                 res = calculate_angles(logic_id, cx, cy, cfg)
-                if not res: continue
-                
-                ui_az, ui_el, ctrl_az, ctrl_el = res
-                send_dist = 0.0
-                
-                # Case 1: 主目标 (Target 0) -> 驱动云台
-                if t_id == 0:
-                    # 1. 发送运动指令
-                    gimbal.set_attitude(elevation=ctrl_el, azimuth=ctrl_az)
-                    
-                    # 2. 等待到位 (会阻塞约 0.1~0.8秒，取决于运动幅度)
-                    # 如果不需要严格确认到位才测距，可以去掉这个 if check，直接测距
-                    is_settled = wait_gimbal_settle(gimbal, target_el=ctrl_el, target_az=ctrl_az, threshold=1.0)
-                    
-                    if is_settled:
-                        with shared_state.lock:
-                            # 只有云台稳了，激光的数据才是打在目标上的
-                            master_laser_dist = shared_state.latest_dist
-                    else:
-                        master_laser_dist = 52.5
-                    
-                        send_dist = master_laser_dist
-                        master_ctrl_az = ctrl_az
-                        master_ctrl_el = ctrl_el
-                    
-                    # print(f"[T0] {board_str}-{cam_idx} | Tgt: {ctrl_az:.1f}, {ctrl_el:.1f} | Dist: {send_dist}")
+                if res:
+                    ui_az, ui_el = res
+                    current_measurements.append([ui_az, ui_el])
 
-                # Case 2: 从目标 (Ghost Target)
-                else:
-                    is_ghost = False
-                    if master_ctrl_az is not None:
-                        diff_az = abs(ctrl_az - master_ctrl_az)
-                        diff_el = abs(ctrl_el - master_ctrl_el)
-                        # 如果从目标和主目标角度非常接近，认为激光打到的也是它
-                        if diff_az < 0.5 and diff_el < 0.5:
-                            is_ghost = True
-                    
-                    if is_ghost:
-                        send_dist = master_laser_dist 
-                    else:
-                        send_dist = 52.5
+            # --- 3. 喂给 Tracker 更新所有目标轨迹 ---
+            active_tracks = tracker.update(current_measurements, dt)
+            
+            # 过滤出合法的、可以被锁定的目标 (连续追踪超过 CONFIRM_HITS 次的)
+            valid_tracks = [
+                t for t in active_tracks
+                if t.hit_streak >= CONFIRM_HITS and t.time_since_update == 0
+            ]
 
-                sender.send_status(
-                    board_str, cam_idx, t_id,
-                    azimuth=ui_az, 
-                    elevation=ui_el, 
-                    distance=send_dist
-                )
+            # --- 4. 状态机：调度决策 ---
+            # 检查当前跟踪的目标是否已经丢失
+            master_track = next((t for t in valid_tracks if t.id == master_id), None)
+            
+            if master_track is None or lock_timer <= 0:
+                # 状态 A：寻找/切换新目标 (SEARCHING)
+                master_id = None
+                if len(valid_tracks) > 0:
+                    # 策略：找当前距离云台物理角度最近的目标
+                    real_att = gimbal.get_attitude()
+                    curr_gimbal_az = real_att[1] if real_att else 0.0
+                    curr_gimbal_el = real_att[0] if real_att else 0.0
+                    
+                    best_track = None
+                    min_dist = float('inf')
+                    for t in valid_tracks:
+                        dist_az = angular_diff(t.state[0], curr_gimbal_az)
+                        dist_el = t.state[1] - curr_gimbal_el
+                        dist = np.sqrt(dist_az**2 + dist_el**2)
+                        if dist < min_dist:
+                            min_dist = dist
+                            best_track = t
+                            
+                    if best_track:
+                        master_id = best_track.id
+                        lock_timer = LOCK_DURATION
+                        master_track = best_track
+                        print(f"[Scheduler] 切换锁定目标 ID: {master_id}, 倒计时重置 {LOCK_DURATION}s")
+
+            # --- 5. 状态机：物理执行与测距 (LOCKED) ---
+            if master_track is not None:
+                lock_timer -= dt
+                
+                # A. 提取提前量预测角度
+                fut_az, fut_el = master_track.get_future_position(dt_delay=PREDICT_DELAY)
+                
+                # B. 转换为云台控制角
+                ctrl_az, ctrl_el = ui_to_ctrl_angles(fut_az, fut_el)
+                
+                # C. 发送运动指令
+                gimbal.set_attitude(elevation=ctrl_el, azimuth=ctrl_az)
+                
+                # D. 检查是否到位 & 激光测距
+                is_settled = wait_gimbal_settle(gimbal, target_el=ctrl_el, target_az=ctrl_az, threshold=1.0, timeout=0.8)
+                
+                master_laser_dist = 52.5 # 默认距离
+                if is_settled:
+                    with shared_state.lock:
+                        master_laser_dist = shared_state.latest_dist
+                
+                # E. 向 UI 发送数据包 (遍历所有合法的追踪档案)
+                # 这样即使云台在打 ID 1，UI 上也能看到 ID 2, 3 的平滑轨迹
+                for t in valid_tracks:
+                    send_dist = master_laser_dist if (t.id == master_id) else 52.5
+                    
+                    sender.send_status(
+                        board_str, cam_idx, t.id,  # 这里传入的是持续追踪的 ID，而不是一闪而过的数组下标
+                        azimuth=t.state[0],        # 发送卡尔曼平滑后的位置
+                        elevation=t.state[1], 
+                        distance=send_dist
+                    )
 
         except KeyboardInterrupt:
             break
