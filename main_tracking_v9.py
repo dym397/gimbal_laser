@@ -1,4 +1,4 @@
-import random
+﻿import random
 import socket
 import threading
 import time
@@ -15,7 +15,10 @@ try:
 except ImportError as e:
     print(f"[System] 驱动接口加载失败: {e}")
     exit(1) # 驱动加载失败直接退出，防止后续报错
-
+try:
+    from mock_gimbal import MockGimbalAdapter
+except ImportError:
+    MockGimbalAdapter = None
 # ==========================================
 # 配置
 # ==========================================
@@ -24,6 +27,11 @@ UI_PORT = 9999
 LOCAL_PORT = 8888       
 GIMBAL_PORT = "COM3"    # 请确认这是 GT06Z 实际连接的端口
 LASER_PORT = "COM4"
+USE_MOCK_GIMBAL = True  # True: 使用 mock_gimbal.py; False: 使用真实 GT06Z
+ENABLE_IMU = False      # Manual switch: True to enable IMU read/print
+IMU_PORT = "COM5"
+IMU_BAUDRATE = 9600
+IMU_PRINT_INTERVAL = 0.2
 
 IMG_W = 3840.0
 IMG_H = 2160.0
@@ -149,17 +157,54 @@ shared_state = SharedData()
 packet_queue = deque(maxlen=20)
 
 def rk3588_thread():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(("0.0.0.0", LOCAL_PORT))
     print(f"[Net] Listening RK3588 on {LOCAL_PORT}...")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(1.0)
+
+    try:
+        sock.bind(("0.0.0.0", LOCAL_PORT))
+    except OSError as e:
+        print(f"[Net][Fatal] 端口 {LOCAL_PORT} 绑定失败: {e}")
+        return
+
+    err_decode = 0
+    err_json = 0
+    err_sock = 0
+    err_other = 0
+
     while True:
         try:
-            data, _ = sock.recvfrom(65535)
-            pkg = json.loads(data.decode('utf-8'))
-            if "objs" in pkg:
+            data, addr = sock.recvfrom(65535)
+            pkg = json.loads(data.decode("utf-8"))
+            if isinstance(pkg, dict) and "objs" in pkg:
                 packet_queue.append(pkg)
-        except:
-            pass
+
+        except socket.timeout:
+            continue
+
+        except UnicodeDecodeError as e:
+            err_decode += 1
+            if err_decode % 50 == 1:
+                print(f"[Net][DecodeError] count={err_decode}, err={e}")
+            continue
+
+        except json.JSONDecodeError as e:
+            err_json += 1
+            if err_json % 50 == 1:
+                print(f"[Net][JSONError] count={err_json}, err={e}")
+            continue
+
+        except OSError as e:
+            err_sock += 1
+            if err_sock % 10 == 1:
+                print(f"[Net][SocketError] count={err_sock}, 网卡/底层异常: {e}")
+            time.sleep(0.5)
+            continue
+
+        except Exception as e:
+            err_other += 1
+            print(f"[Net][Unexpected] count={err_other}, type={type(e).__name__}, err={e}")
+            continue
 
 def laser_thread_mock():
     # 这里如果您有了真实的激光驱动 sddm_laser.py，也可以替换掉 mock
@@ -268,7 +313,7 @@ class MultiTargetTracker:
         if len(self.tracks) == 0:
             # 全是新目标
             for meas in measurements:
-                self.tracks.append(Track(meas[0], meas[1]))
+                self.tracks.append(Track(meas[0], meas[1]))#create kalman track for each measurement
             return self.tracks
 
         # 2. 计算代价矩阵 (角度距离)
@@ -326,15 +371,9 @@ def calculate_angles(cam_key, cx, cy, cfg=None):
 # 5. 云台到位检测 (针对真实串口优化)
 # ==========================================
 def wait_gimbal_settle(gimbal, target_el, target_az, threshold=0.5, timeout=0.8):
-    """
-    等待云台运动到指定位置。
-    注意：真实串口查询(query_angles)是有耗时的(单次约20ms+)，
-    因此不要查询得太频繁，这里将 sleep 增加到 0.05
-    """
     start_t = time.time()
-    
-    # 归一化目标 Azimuth 到 0-360 以便比较
     target_az_norm = target_az % 360.0
+    loop_cnt = 0 # 用于控制打印频率
     
     while (time.time() - start_t) < timeout:
         real_att = gimbal.get_attitude() # 调用驱动 query_angles
@@ -344,23 +383,25 @@ def wait_gimbal_settle(gimbal, target_el, target_az, threshold=0.5, timeout=0.8)
             continue
             
         curr_el, curr_az, _ = real_att 
-        
-        # 归一化当前 Azimuth
         curr_az_norm = curr_az % 360.0
         
-        # 计算偏差
         err_el = abs(curr_el - target_el)
-        
-        # 水平角度偏差（处理0/360跳变问题）
         err_az = abs(curr_az_norm - target_az_norm)
         if err_az > 180:
             err_az = 360 - err_az
+            
+        # === 新增：Phase 4 循环追踪打印 (降频打印避免刷屏) ===
+        if loop_cnt % 2 == 0:
+            print(f"[Phase 4: 云台闭环] 等待到位... 目标[Az:{target_az:.1f}°] | 当前[Az:{curr_az:.1f}°] | 误差:{err_az:.1f}°")
         
         if err_el < threshold and err_az < threshold:
+            print(f"[Phase 4: 云台闭环] 已到位! 耗时: {(time.time() - start_t):.3f}s")
             return True
             
+        loop_cnt += 1
         time.sleep(0.05) # 降低查询频率，避免堵塞串口 Tx/Rx
         
+    print(f"[Phase 4: 云台闭环] 等待超时 ({timeout}s)! 当前误差 Az:{err_az:.1f}° (物理云台还在移动追赶中)")
     return False
 
 # ==========================================
@@ -369,9 +410,15 @@ def wait_gimbal_settle(gimbal, target_el, target_az, threshold=0.5, timeout=0.8)
 def main():
     sender = UISender(UI_IP, UI_PORT)
     
-    print(f"[Init] Connecting to Gimbal at {GIMBAL_PORT}...")
-    gimbal = GT06ZAdapter(port=GIMBAL_PORT)
-    
+    if USE_MOCK_GIMBAL:
+        if MockGimbalAdapter is None:
+            print("[Error] USE_MOCK_GIMBAL=True, but mock_gimbal.py import failed.")
+            return
+        print("[Init] Connecting to Mock Gimbal at MOCK_COM...")
+        gimbal = MockGimbalAdapter(port="MOCK_COM")
+    else:
+        print(f"[Init] Connecting to Gimbal at {GIMBAL_PORT}...")
+        gimbal = GT06ZAdapter(port=GIMBAL_PORT)
     if not gimbal.connect():
         print("[Error] Failed to connect gimbal.")
         return
@@ -382,6 +429,18 @@ def main():
     #start background threads for network and laser
     threading.Thread(target=rk3588_thread, daemon=True).start()
     threading.Thread(target=laser_thread_mock, daemon=True).start()
+
+    imu = None
+    last_imu_print = 0.0
+    if ENABLE_IMU:
+        try:
+            from hwt905_driver import HWT905
+            imu = HWT905(IMU_PORT, IMU_BAUDRATE)
+            imu.open()
+            print(f"[IMU] Enabled on {IMU_PORT}@{IMU_BAUDRATE}")
+        except Exception as e:
+            print(f"[IMU] Init failed: {e}")
+            imu = None
     
     print("=== System V9.0 (Predictive Tracking & Scheduling) Running ===")
 
@@ -400,11 +459,17 @@ def main():
 
     while True:
         try:
+            curr_time = time.time()
+            if imu and (curr_time - last_imu_print) >= IMU_PRINT_INTERVAL:
+                acc, gyro, angle = imu.get_all()
+                roll, pitch, yaw = angle
+                print(f"ANGLE: {roll:6.2f} {pitch:6.2f} {yaw:6.2f}")
+                last_imu_print = curr_time
+
             # --- 1. 获取 UDP 数据 (如果有) ---
             if not packet_queue:
                 time.sleep(0.005) # 稍微让出 CPU
                 continue
-            curr_time = time.time()
             dt = curr_time - last_time
             if dt > MAX_DT:
                 dt = MAX_DT
@@ -434,7 +499,8 @@ def main():
                 if res:
                     ui_az, ui_el = res
                     current_measurements.append([ui_az, ui_el])
-
+                    # === 新增：Phase 1 打印 ===
+                    print(f"\n[Phase 1: 视觉解析] 收到目标 cx={cx:.1f}, cy={cy:.1f} -> 解算绝对角度: Az={ui_az:.2f}°, El={ui_el:.2f}°")
             # --- 3. 喂给 Tracker 更新所有目标轨迹 ---
             active_tracks = tracker.update(current_measurements, dt)
             
@@ -455,6 +521,7 @@ def main():
                     # 策略：找当前距离云台物理角度最近的目标
                     real_att = gimbal.get_attitude()
                     curr_gimbal_az = real_att[1] if real_att else 0.0
+                    curr_gimbal_az = (curr_gimbal_az - 90.0) % 360.0
                     curr_gimbal_el = real_att[0] if real_att else 0.0
                     
                     best_track = None
@@ -471,8 +538,9 @@ def main():
                         master_id = best_track.id
                         lock_timer = LOCK_DURATION
                         master_track = best_track
-                        print(f"[Scheduler] 切换锁定目标 ID: {master_id}, 倒计时重置 {LOCK_DURATION}s")
-
+                        # print(f"[Scheduler] 切换锁定目标 ID: {master_id}, 倒计时重置 {LOCK_DURATION}s")
+                        # === 修改：Phase 2 打印 ===
+                        print(f"[Phase 2: 目标调度] 成功锁定目标 ID: {master_id} (已连续追踪 {master_track.hit_streak} 帧). 准备交由云台跟踪!")
             # --- 5. 状态机：物理执行与测距 (LOCKED) ---
             if master_track is not None:
                 lock_timer -= dt
@@ -482,7 +550,9 @@ def main():
                 
                 # B. 转换为云台控制角
                 ctrl_az, ctrl_el = ui_to_ctrl_angles(fut_az, fut_el)
-                
+                # === 新增：Phase 3 打印 ===
+                print(f"[Phase 3: 预测控制] 目标当前估算Az={master_track.state[0]:.2f}°, 速度={master_track.state[2]:.2f}°/s")
+                print(f"                   -> 打提前量({PREDICT_DELAY}s后)Az={fut_az:.2f}°, El={fut_el:.2f}° | 下发云台指令: Az={ctrl_az:.2f}°, El={ctrl_el:.2f}°")
                 # C. 发送运动指令
                 gimbal.set_attitude(elevation=ctrl_el, azimuth=ctrl_az)
                 
@@ -513,7 +583,10 @@ def main():
             import traceback
             traceback.print_exc()
 
-    if 'gimbal' in locals(): gimbal.close()
+    if imu:
+        imu.close()
+    if 'gimbal' in locals():
+        gimbal.close()
 
 if __name__ == "__main__":
     main()
