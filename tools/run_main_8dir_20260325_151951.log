@@ -1,0 +1,3 @@
+[Init] Connecting to Gimbal at COM3...
+[GT06Z] Open fail: could not open port 'COM3': PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5)
+[Error] Failed to connect gimbal.

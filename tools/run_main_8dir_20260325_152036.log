@@ -1,0 +1,786 @@
+[Init] Connecting to Gimbal at COM3...
+[GT06Z] Driver Ready on COM3.
+[Adapter] GT06Z 云台已连接: COM3
+[Net] Listening RK3588 on 8888...
+[GimbalThread] 控制线程已启动
+=== System V9.0 (Predictive Tracking & Scheduling) Running ===
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=0.00°, El=-0.00°) target_delta=(dAz=32.73°, dEl=2.97°) => turn=RIGHT_UP
+[Stats] recv_objs_total=1, recv_unique_boxes=1 | ui_send_total=0, ui_unique_ids=0, ui_id_counts=none
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=0.00°, El=-0.00°) target_delta=(dAz=32.73°, dEl=2.97°) => turn=RIGHT_UP
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=0.00°, El=-0.00°) target_delta=(dAz=32.73°, dEl=2.97°) => turn=RIGHT_UP
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=32.9°) 成功锁定目标 ID: 1. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=0.00°, El=-0.00°) target_delta=(dAz=32.73°, dEl=2.97°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=0.00°, El=-0.00°) target_delta=(dAz=32.73°, dEl=2.97°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=0.00°, El=-0.00°) target_delta=(dAz=32.73°, dEl=2.97°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=0.00°, El=-0.00°) target_delta=(dAz=32.73°, dEl=2.97°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=0.00°, El=-0.00°) target_delta=(dAz=32.73°, dEl=2.97°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=0.00°, El=-0.00°) target_delta=(dAz=32.73°, dEl=2.97°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=1.10°, El=0.10°) target_delta=(dAz=31.63°, dEl=2.87°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=1.10°, El=0.10°) target_delta=(dAz=31.63°, dEl=2.87°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=1.10°, El=0.10°) target_delta=(dAz=31.63°, dEl=2.87°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=6.30°, El=1.40°) target_delta=(dAz=26.43°, dEl=1.57°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=6.30°, El=1.40°) target_delta=(dAz=26.43°, dEl=1.57°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=6.30°, El=1.40°) target_delta=(dAz=26.43°, dEl=1.57°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=14.20°, El=1.40°) target_delta=(dAz=18.53°, dEl=1.57°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=14.20°, El=1.40°) target_delta=(dAz=18.53°, dEl=1.57°) => turn=RIGHT_UP
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=14.20°, El=1.40°) target_delta=(dAz=18.53°, dEl=1.57°) => turn=RIGHT_UP
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=18.6°) 成功锁定目标 ID: 1. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=23.40°, El=2.90°) target_delta=(dAz=9.33°, dEl=0.07°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=2.97°
+[DirCheck] gimbal_ui=(Az=23.40°, El=2.90°) target_delta=(dAz=9.33°, dEl=0.07°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=2.97° | 下发云台指令: Az=122.73°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=23.40°, El=2.90°) target_delta=(dAz=9.33°, dEl=-5.87°) => turn=RIGHT_DOWN
+[Stats] recv_objs_total=21, recv_unique_boxes=2 | ui_send_total=18, ui_unique_ids=1, ui_id_counts=1:18
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=31.60°, El=2.90°) target_delta=(dAz=1.13°, dEl=-5.87°) => turn=RIGHT_DOWN
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=31.60°, El=2.90°) target_delta=(dAz=1.13°, dEl=-5.87°) => turn=RIGHT_DOWN
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=6.0°) 成功锁定目标 ID: 2. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=31.60°, El=2.90°) target_delta=(dAz=1.13°, dEl=-5.87°) => turn=RIGHT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=31.60°, El=2.90°) target_delta=(dAz=1.13°, dEl=-5.87°) => turn=RIGHT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=2.90°) target_delta=(dAz=0.13°, dEl=-5.87°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=2.90°) target_delta=(dAz=0.13°, dEl=-5.87°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=2.90°) target_delta=(dAz=0.13°, dEl=-5.87°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=2.90°) target_delta=(dAz=0.13°, dEl=-5.87°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=2.90°) target_delta=(dAz=0.13°, dEl=-5.87°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=2.90°) target_delta=(dAz=0.13°, dEl=-5.87°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=1.80°) target_delta=(dAz=0.13°, dEl=-4.77°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=1.80°) target_delta=(dAz=0.13°, dEl=-4.77°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=1.80°) target_delta=(dAz=0.13°, dEl=-4.77°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-0.80°) target_delta=(dAz=0.13°, dEl=-2.17°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-0.80°) target_delta=(dAz=0.13°, dEl=-2.17°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-0.80°) target_delta=(dAz=0.13°, dEl=-2.17°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-0.80°) target_delta=(dAz=0.13°, dEl=-2.17°) => turn=DOWN
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=2.2°) 成功锁定目标 ID: 2. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-0.80°) target_delta=(dAz=0.13°, dEl=-2.17°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=1920.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=32.73°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-0.80°) target_delta=(dAz=0.13°, dEl=-2.17°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=32.73°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=32.73°, El=-2.97° | 下发云台指令: Az=122.73°, El=-2.97°
+[Laser] No valid laser distance, use mono distance
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-2.80°) target_delta=(dAz=-5.12°, dEl=2.80°) => turn=LEFT_UP
+[Stats] recv_objs_total=41, recv_unique_boxes=3 | ui_send_total=36, ui_unique_ids=2, ui_id_counts=1:18, 2:18
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-2.80°) target_delta=(dAz=-5.12°, dEl=2.80°) => turn=LEFT_UP
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-2.80°) target_delta=(dAz=-5.12°, dEl=2.80°) => turn=LEFT_UP
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=5.8°) 成功锁定目标 ID: 3. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-2.80°) target_delta=(dAz=-5.12°, dEl=2.80°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-2.80°) target_delta=(dAz=-5.12°, dEl=2.80°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-2.80°) target_delta=(dAz=-5.12°, dEl=2.80°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=32.60°, El=-2.80°) target_delta=(dAz=-5.12°, dEl=2.80°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=31.50°, El=-2.80°) target_delta=(dAz=-4.02°, dEl=2.80°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=31.50°, El=-2.80°) target_delta=(dAz=-4.02°, dEl=2.80°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=31.50°, El=-1.50°) target_delta=(dAz=-4.02°, dEl=1.50°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=31.50°, El=-1.50°) target_delta=(dAz=-4.02°, dEl=1.50°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=31.50°, El=-1.50°) target_delta=(dAz=-4.02°, dEl=1.50°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=31.50°, El=-1.50°) target_delta=(dAz=-4.02°, dEl=1.50°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-1.50°) target_delta=(dAz=0.08°, dEl=1.50°) => turn=UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-1.50°) target_delta=(dAz=0.08°, dEl=1.50°) => turn=UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-1.50°) target_delta=(dAz=0.08°, dEl=1.50°) => turn=UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+[Laser] No valid laser distance, use mono distance
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-0.00°) target_delta=(dAz=0.08°, dEl=0.00°) => turn=HOLD
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-0.00°) target_delta=(dAz=0.08°, dEl=0.00°) => turn=HOLD
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=0.1°) 成功锁定目标 ID: 3. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-0.00°) target_delta=(dAz=0.08°, dEl=0.00°) => turn=HOLD
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-0.00°) target_delta=(dAz=0.08°, dEl=0.00°) => turn=HOLD
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=0.00° | 下发云台指令: Az=117.48°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-0.00°) target_delta=(dAz=10.58°, dEl=0.00°) => turn=RIGHT
+[Stats] recv_objs_total=61, recv_unique_boxes=4 | ui_send_total=54, ui_unique_ids=3, ui_id_counts=1:18, 2:18, 3:18
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-0.00°) target_delta=(dAz=10.58°, dEl=0.00°) => turn=RIGHT
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-0.00°) target_delta=(dAz=10.58°, dEl=0.00°) => turn=RIGHT
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=10.6°) 成功锁定目标 ID: 4. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-0.00°) target_delta=(dAz=10.58°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-0.00°) target_delta=(dAz=10.58°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-0.00°) target_delta=(dAz=10.58°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-0.00°) target_delta=(dAz=10.58°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=28.50°, El=-0.00°) target_delta=(dAz=9.48°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=28.50°, El=-0.00°) target_delta=(dAz=9.48°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=28.50°, El=-0.00°) target_delta=(dAz=9.48°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=33.60°, El=-0.00°) target_delta=(dAz=4.38°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=33.60°, El=-0.00°) target_delta=(dAz=4.38°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=33.60°, El=-0.00°) target_delta=(dAz=4.38°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=33.60°, El=-0.00°) target_delta=(dAz=4.38°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=33.60°, El=-0.00°) target_delta=(dAz=4.38°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=33.60°, El=-0.00°) target_delta=(dAz=4.38°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=33.60°, El=-0.00°) target_delta=(dAz=4.38°, dEl=0.00°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+[Laser] No valid laser distance, use mono distance
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=37.80°, El=-0.00°) target_delta=(dAz=0.18°, dEl=0.00°) => turn=HOLD
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=0.2°) 成功锁定目标 ID: 4. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=37.80°, El=-0.00°) target_delta=(dAz=0.18°, dEl=0.00°) => turn=HOLD
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1080.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=0.00°
+[DirCheck] gimbal_ui=(Az=37.80°, El=-0.00°) target_delta=(dAz=0.18°, dEl=0.00°) => turn=HOLD
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=0.00° | 下发云台指令: Az=127.98°, El=0.00°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=-0.00°) target_delta=(dAz=-10.32°, dEl=2.97°) => turn=LEFT_UP
+[Stats] recv_objs_total=81, recv_unique_boxes=5 | ui_send_total=72, ui_unique_ids=4, ui_id_counts=1:18, 2:18, 3:18, 4:18
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=-0.00°) target_delta=(dAz=-10.32°, dEl=2.97°) => turn=LEFT_UP
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=-0.00°) target_delta=(dAz=-10.32°, dEl=2.97°) => turn=LEFT_UP
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=10.7°) 成功锁定目标 ID: 5. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=-0.00°) target_delta=(dAz=-10.32°, dEl=2.97°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=-0.00°) target_delta=(dAz=-10.32°, dEl=2.97°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=-0.00°) target_delta=(dAz=-10.32°, dEl=2.97°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=-0.00°) target_delta=(dAz=-10.32°, dEl=2.97°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=-0.00°) target_delta=(dAz=-10.32°, dEl=2.97°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=36.80°, El=0.10°) target_delta=(dAz=-9.32°, dEl=2.87°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=36.80°, El=0.10°) target_delta=(dAz=-9.32°, dEl=2.87°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=31.60°, El=1.40°) target_delta=(dAz=-4.12°, dEl=1.57°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=31.60°, El=1.40°) target_delta=(dAz=-4.12°, dEl=1.57°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=31.60°, El=1.40°) target_delta=(dAz=-4.12°, dEl=1.57°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=31.60°, El=1.40°) target_delta=(dAz=-4.12°, dEl=1.57°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=31.60°, El=1.40°) target_delta=(dAz=-4.12°, dEl=1.57°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=31.60°, El=1.40°) target_delta=(dAz=-4.12°, dEl=1.57°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=31.60°, El=1.40°) target_delta=(dAz=-4.12°, dEl=1.57°) => turn=LEFT_UP
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+[Laser] No valid laser distance, use mono distance
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=3.00°) target_delta=(dAz=0.08°, dEl=-0.03°) => turn=HOLD
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=0.1°) 成功锁定目标 ID: 5. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=3.00°) target_delta=(dAz=0.08°, dEl=-0.03°) => turn=HOLD
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=3.00°) target_delta=(dAz=0.08°, dEl=-0.03°) => turn=HOLD
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=2.97° | 下发云台指令: Az=117.48°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=3.00°) target_delta=(dAz=10.58°, dEl=-0.03°) => turn=RIGHT
+[Stats] recv_objs_total=101, recv_unique_boxes=6 | ui_send_total=90, ui_unique_ids=5, ui_id_counts=1:18, 2:18, 3:18, 4:18, 5:18
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=3.00°) target_delta=(dAz=10.58°, dEl=-0.03°) => turn=RIGHT
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=3.00°) target_delta=(dAz=10.58°, dEl=-0.03°) => turn=RIGHT
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=10.6°) 成功锁定目标 ID: 6. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=3.00°) target_delta=(dAz=10.58°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=3.00°) target_delta=(dAz=10.58°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=3.00°) target_delta=(dAz=10.58°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=3.00°) target_delta=(dAz=10.58°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=3.00°) target_delta=(dAz=10.58°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=28.50°, El=3.00°) target_delta=(dAz=9.48°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=28.50°, El=3.00°) target_delta=(dAz=9.48°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=28.50°, El=3.00°) target_delta=(dAz=9.48°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=3.00°) target_delta=(dAz=4.08°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=3.00°) target_delta=(dAz=4.08°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=3.00°) target_delta=(dAz=4.08°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=3.00°) target_delta=(dAz=4.08°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=3.00°) target_delta=(dAz=4.08°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=3.00°) target_delta=(dAz=4.08°, dEl=-0.03°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=3.00°) target_delta=(dAz=4.08°, dEl=-0.03°) => turn=RIGHT
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=4.1°) 成功锁定目标 ID: 6. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+[Laser] No valid laser distance, use mono distance
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=3.00°) target_delta=(dAz=0.18°, dEl=-0.03°) => turn=HOLD
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=432.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=3.00°) target_delta=(dAz=0.18°, dEl=-0.03°) => turn=HOLD
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=2.97° | 下发云台指令: Az=127.98°, El=2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=3.00°) target_delta=(dAz=-10.32°, dEl=-5.97°) => turn=LEFT_DOWN
+[Stats] recv_objs_total=121, recv_unique_boxes=7 | ui_send_total=108, ui_unique_ids=6, ui_id_counts=1:18, 2:18, 3:18, 4:18, 5:18, 6:18
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=3.00°) target_delta=(dAz=-10.32°, dEl=-5.97°) => turn=LEFT_DOWN
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=3.00°) target_delta=(dAz=-10.32°, dEl=-5.97°) => turn=LEFT_DOWN
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=11.9°) 成功锁定目标 ID: 7. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=3.00°) target_delta=(dAz=-10.32°, dEl=-5.97°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=3.00°) target_delta=(dAz=-10.32°, dEl=-5.97°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=37.80°, El=3.00°) target_delta=(dAz=-10.32°, dEl=-5.97°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=36.80°, El=2.90°) target_delta=(dAz=-9.32°, dEl=-5.87°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=36.80°, El=2.90°) target_delta=(dAz=-9.32°, dEl=-5.87°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=36.80°, El=2.90°) target_delta=(dAz=-9.32°, dEl=-5.87°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=31.50°, El=1.60°) target_delta=(dAz=-4.02°, dEl=-4.57°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=31.50°, El=1.60°) target_delta=(dAz=-4.02°, dEl=-4.57°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=31.50°, El=1.60°) target_delta=(dAz=-4.02°, dEl=-4.57°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=31.50°, El=-1.10°) target_delta=(dAz=-4.02°, dEl=-1.87°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=31.50°, El=-1.10°) target_delta=(dAz=-4.02°, dEl=-1.87°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=31.50°, El=-1.10°) target_delta=(dAz=-4.02°, dEl=-1.87°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=31.50°, El=-1.10°) target_delta=(dAz=-4.02°, dEl=-1.87°) => turn=LEFT_DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-1.10°) target_delta=(dAz=0.08°, dEl=-1.87°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-1.10°) target_delta=(dAz=0.08°, dEl=-1.87°) => turn=DOWN
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=1.9°) 成功锁定目标 ID: 7. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-1.10°) target_delta=(dAz=0.08°, dEl=-1.87°) => turn=DOWN
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+[Laser] No valid laser distance, use mono distance
+
+[Phase 1: 视觉解析] 收到目标 cx=768.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=27.48°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-2.80°) target_delta=(dAz=0.08°, dEl=-0.17°) => turn=HOLD
+[Phase 3: 预测控制] 目标当前估算Az=27.48°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=27.48°, El=-2.97° | 下发云台指令: Az=117.48°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-2.80°) target_delta=(dAz=10.58°, dEl=-0.17°) => turn=RIGHT
+[Stats] recv_objs_total=141, recv_unique_boxes=8 | ui_send_total=126, ui_unique_ids=7, ui_id_counts=1:18, 2:18, 3:18, 4:18, 5:18, 6:18, 7:18
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-2.80°) target_delta=(dAz=10.58°, dEl=-0.17°) => turn=RIGHT
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-2.80°) target_delta=(dAz=10.58°, dEl=-0.17°) => turn=RIGHT
+[Phase 2: 目标调度] 基于威胁度(v=0.0°/s, dist=10.6°) 成功锁定目标 ID: 8. 准备交由云台跟踪!
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-2.80°) target_delta=(dAz=10.58°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-2.80°) target_delta=(dAz=10.58°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=27.40°, El=-2.80°) target_delta=(dAz=10.58°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=28.50°, El=-2.80°) target_delta=(dAz=9.48°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=28.50°, El=-2.80°) target_delta=(dAz=9.48°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=28.50°, El=-2.80°) target_delta=(dAz=9.48°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=-2.80°) target_delta=(dAz=4.08°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=-2.80°) target_delta=(dAz=4.08°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=-2.80°) target_delta=(dAz=4.08°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=-2.80°) target_delta=(dAz=4.08°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=-2.80°) target_delta=(dAz=4.08°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=-2.80°) target_delta=(dAz=4.08°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°
+[DirCheck] gimbal_ui=(Az=33.90°, El=-2.80°) target_delta=(dAz=4.08°, dEl=-0.17°) => turn=RIGHT
+[Phase 3: 预测控制] 目标当前估算Az=37.98°, 速度=0.00°/s
+                   -> 打提前量(0.25s后)Az=37.98°, El=-2.97° | 下发云台指令: Az=127.98°, El=-2.97°
+[Laser] No valid laser distance, use mono distance
+
+[Phase 1: 视觉解析] 收到目标 cx=3072.0, cy=1728.0, mono=300.0m -> 解算绝对角度: Az=37.98°, El=-2.97°

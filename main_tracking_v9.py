@@ -6,7 +6,7 @@ import math
 import struct
 import json
 import queue
-from collections import deque
+from collections import deque, Counter
 
 # ==========================================
 # 0. 驱动引入
@@ -23,23 +23,32 @@ except ImportError:
 # ==========================================
 # 配置
 # ==========================================
-UI_IP = "192.168.1.200"
+UI_IP = "192.168.2.200"
 UI_PORT = 9999
 LOCAL_PORT = 8888       
 GIMBAL_PORT = "COM3"    # 请确认这是 GT06Z 实际连接的端口
 LASER_PORT = "COM4"
-USE_MOCK_GIMBAL = True  # True: 使用 mock_gimbal.py; False: 使用真实 GT06Z
+USE_MOCK_GIMBAL = False  # True: 使用 mock_gimbal.py; False: 使用真实 GT06Z
 ENABLE_IMU = False      # Manual switch: True to enable IMU read/print
 IMU_PORT = "COM5"
 IMU_BAUDRATE = 9600
 IMU_PRINT_INTERVAL = 0.2
-GIMBAL_CMD_DEADBAND_AZ = 0.3
-GIMBAL_CMD_DEADBAND_EL = 0.2
-GIMBAL_PREEMPT_DEG = 1.5
-GIMBAL_SETTLE_THRESHOLD = 1.0
-GIMBAL_SETTLE_TIMEOUT = 0.8
+GIMBAL_AZ_BASE = 90.0  # 云台水平基准角（UI绝对方位 0° 映射到控制角的基准）
+GIMBAL_CMD_DEADBAND_AZ = 0.20
+GIMBAL_CMD_DEADBAND_EL = 0.12
+GIMBAL_PREEMPT_DEG = 0.7  # 新指令与当前指令的最小抢占角度差，单位：度
+GIMBAL_SETTLE_THRESHOLD = 0.8
+GIMBAL_SETTLE_TIMEOUT = 1.0
 GIMBAL_THREAD_SLEEP = 0.02
-LASER_DIST_TTL = 1.5
+LASER_DIST_TTL = 2.0
+MONO_DIST_TTL = 1.2
+DEFAULT_TRACKING_DISTANCE_M = 450.0  # 仅用于内部参数冷启动（保持稳定）
+DEFAULT_DISTANCE_MIN_M = 200.0
+DEFAULT_DISTANCE_MAX_M = 470.0
+HIT_STREAK_DECAY = 1
+STABILITY_HIT_CAP = 20
+STABILITY_WEIGHT = 0.8
+STATS_PRINT_INTERVAL = 2.0
 
 IMG_W = 3840.0
 IMG_H = 2160.0
@@ -159,21 +168,29 @@ class UISender:
 class SharedHardwareState:
     def __init__(self):
         self.lock = threading.Lock()
-        self.raw_laser_dist = 52.5
-        self.valid_laser_dist = 52.5
-        self.latest_dist = 52.5
+        self.raw_laser_dist = None
+        self.valid_laser_dist = None
+        self.latest_dist = None
         self.laser_ts = 0.0
         self.gimbal_az = 0.0  # UI坐标系方位角
         self.gimbal_el = 0.0
         self.gimbal_att_ts = 0.0
         self.active_cmd_id = -1
+        self.active_track_id = -1
         self.settled_cmd_id = -1
+        self.settled_track_id = -1
+        self.laser_track_id = -1
         self.settled_ts = 0.0
         self.is_settled = False
 
 shared_state = SharedHardwareState()
 gimbal_cmd_queue = queue.Queue(maxsize=1)
 packet_queue = deque(maxlen=20)
+
+
+def sample_default_distance():
+    """兜底距离采样：用于无激光、无单目时的保底值。"""
+    return random.uniform(DEFAULT_DISTANCE_MIN_M, DEFAULT_DISTANCE_MAX_M)
 
 def rk3588_thread():
     print(f"[Net] Listening RK3588 on {LOCAL_PORT}...")
@@ -225,14 +242,6 @@ def rk3588_thread():
             print(f"[Net][Unexpected] count={err_other}, type={type(e).__name__}, err={e}")
             continue
 
-def laser_thread_mock():
-    # 这里如果您有了真实的激光驱动 sddm_laser.py，也可以替换掉 mock
-    while True:
-        with shared_state.lock:
-            # 模拟激光测距
-            shared_state.raw_laser_dist = 52.5
-        time.sleep(0.05)
-
 def push_latest_gimbal_cmd(cmd):
     while True:
         try:
@@ -256,9 +265,135 @@ def drain_latest_gimbal_cmd():
 def read_laser_distance():
     with shared_state.lock:
         dist = shared_state.raw_laser_dist
-    if dist and dist > 0:
-        return dist
-    return 52.5
+    return _parse_positive_float(dist)
+
+
+def _parse_positive_float(value):
+    try:
+        f = float(value)
+        if f > 0:
+            return f
+    except (TypeError, ValueError):
+        pass
+    return None
+
+
+def parse_udp_objects(raw_objs):
+    """
+    归一化 UDP 目标列表，输出:
+        [{"box": [x1, y1, x2, y2], "mono_dist": float|None}, ...]
+
+    支持格式:
+    1) [x1, y1, x2, y2]
+    2) [x1, y1, x2, y2, dist]
+    3) {"box":[x1,y1,x2,y2], "distance":d}
+    4) {"boxes":[[...],[...]], "distances":[...]} (多坐标批量)
+    """
+    parsed = []
+
+    # 兼容单目标扁平格式:
+    # objs = [x1, y1, x2, y2] / [x1, y1, x2, y2, dist]
+    if isinstance(raw_objs, (list, tuple)) and len(raw_objs) >= 4 and not isinstance(raw_objs[0], (list, tuple, dict)):
+        mono_dist = _parse_positive_float(raw_objs[4]) if len(raw_objs) >= 5 else None
+        return [{"box": [raw_objs[0], raw_objs[1], raw_objs[2], raw_objs[3]], "mono_dist": mono_dist}]
+
+    # 兼容单目标字典:
+    # objs = {"box":[...], "distance":...}
+    if isinstance(raw_objs, dict):
+        raw_objs = [raw_objs]
+
+    if not isinstance(raw_objs, list):
+        return parsed
+
+    for obj_item in raw_objs:
+        if isinstance(obj_item, dict):
+            default_dist = _parse_positive_float(
+                obj_item.get(
+                    "distance_m",
+                    obj_item.get("distance", obj_item.get("dist", obj_item.get("range_m", obj_item.get("range"))))
+                )
+            )
+
+            # 批量 boxes: {"boxes":[...], "distances":[...]}
+            boxes = obj_item.get("boxes", None)
+            if isinstance(boxes, list):
+                dist_list = obj_item.get("distances", None)
+                for i, b in enumerate(boxes):
+                    if not isinstance(b, (list, tuple)) or len(b) < 4:
+                        continue
+                    mono_dist = default_dist
+                    if isinstance(dist_list, list) and i < len(dist_list):
+                        mono_dist = _parse_positive_float(dist_list[i]) or mono_dist
+                    parsed.append({"box": [b[0], b[1], b[2], b[3]], "mono_dist": mono_dist})
+                continue
+
+            # 单目标 box
+            box = obj_item.get("box", None)
+            if isinstance(box, (list, tuple)):
+                # 兼容 {"box":[[...],[...]], ...}
+                if len(box) > 0 and isinstance(box[0], (list, tuple)):
+                    for b in box:
+                        if isinstance(b, (list, tuple)) and len(b) >= 4:
+                            parsed.append({"box": [b[0], b[1], b[2], b[3]], "mono_dist": default_dist})
+                elif len(box) >= 4:
+                    parsed.append({"box": [box[0], box[1], box[2], box[3]], "mono_dist": default_dist})
+                continue
+
+            # 兼容坐标键值形式
+            if all(k in obj_item for k in ("x1", "y1", "x2", "y2")):
+                parsed.append({
+                    "box": [obj_item["x1"], obj_item["y1"], obj_item["x2"], obj_item["y2"]],
+                    "mono_dist": default_dist,
+                })
+                continue
+            if all(k in obj_item for k in ("x", "y", "w", "h")):
+                x = float(obj_item["x"])
+                y = float(obj_item["y"])
+                w = float(obj_item["w"])
+                h = float(obj_item["h"])
+                parsed.append({"box": [x, y, x + w, y + h], "mono_dist": default_dist})
+                continue
+
+        elif isinstance(obj_item, (list, tuple)):
+            # 单目标: [x1, y1, x2, y2, (optional)dist]
+            if len(obj_item) >= 4 and not isinstance(obj_item[0], (list, tuple, dict)):
+                mono_dist = _parse_positive_float(obj_item[4]) if len(obj_item) >= 5 else None
+                parsed.append({"box": [obj_item[0], obj_item[1], obj_item[2], obj_item[3]], "mono_dist": mono_dist})
+                continue
+
+            # 批量: [[x1,y1,x2,y2], [..], ...]
+            if len(obj_item) > 0 and isinstance(obj_item[0], (list, tuple)):
+                for b in obj_item:
+                    if isinstance(b, (list, tuple)) and len(b) >= 4:
+                        mono_dist = _parse_positive_float(b[4]) if len(b) >= 5 else None
+                        parsed.append({"box": [b[0], b[1], b[2], b[3]], "mono_dist": mono_dist})
+                continue
+
+    return parsed
+
+
+def select_track_distance(track, master_id, curr_time):
+    is_master = (track.id == master_id)
+    fresh_laser = (
+        track.last_laser_dist
+        if (track.last_laser_dist is not None and (curr_time - track.laser_ts) <= LASER_DIST_TTL)
+        else None
+    )
+    fresh_mono = (
+        track.last_mono_dist
+        if (track.last_mono_dist is not None and (curr_time - track.mono_ts) <= MONO_DIST_TTL)
+        else None
+    )
+
+    if is_master and fresh_laser is not None:
+        return fresh_laser, "laser"
+    if fresh_mono is not None:
+        return fresh_mono, "mono"
+    if track.last_mono_dist is not None:
+        return track.last_mono_dist, "mono_history"
+    if track.last_sent_dist is not None:
+        return track.last_sent_dist, "mono_sent_history"
+    return float("nan"), "none"
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
@@ -268,6 +403,36 @@ from scipy.optimize import linear_sum_assignment
 def angular_diff(target, source):
     """计算两个绝对角度之间的最短物理距离 (-180 到 180度)"""
     return (target - source + 180.0) % 360.0 - 180.0
+
+
+def get_turn_direction_label(delta_az, delta_el, deadband_az=0.35, deadband_el=0.25):
+    """
+    根据目标相对当前云台姿态的角差，给出转动方向标签。
+    delta_az > 0: 向右转；delta_az < 0: 向左转
+    delta_el > 0: 向上转；delta_el < 0: 向下转
+    """
+    if delta_az > deadband_az:
+        horiz = "RIGHT"
+    elif delta_az < -deadband_az:
+        horiz = "LEFT"
+    else:
+        horiz = "CENTER"
+
+    if delta_el > deadband_el:
+        vert = "UP"
+    elif delta_el < -deadband_el:
+        vert = "DOWN"
+    else:
+        vert = "LEVEL"
+
+    if horiz == "CENTER" and vert == "LEVEL":
+        return "HOLD"
+    if horiz == "CENTER":
+        return vert
+    if vert == "LEVEL":
+        return horiz
+    return f"{horiz}_{vert}"
+
 
 def gimbal_control_thread(gimbal):
     """
@@ -281,40 +446,45 @@ def gimbal_control_thread(gimbal):
 
     while True:
         try:
-            #当前没有指令在执行：
+            #1.当前没有指令在执行：(空闲态)
             if active_cmd is None:
                 try:
+                    #等待队列命令
                     active_cmd = gimbal_cmd_queue.get(timeout=0.1)
-                #云台处于空闲状态则读取当前的一个静止姿态，并将结果更新到共享内存中，供主线程调度使用。
+                
                 except queue.Empty:
-                    real_att = gimbal.get_attitude()
+                    #若指令队列为空
+                    real_att = gimbal.get_attitude()#读当前云台姿态并写入共享状态
                     if real_att:
                         curr_el, curr_az, _ = real_att
-                        curr_ui_az = (curr_az - 90.0) % 360.0
+                        curr_ui_az = (curr_az - GIMBAL_AZ_BASE) % 360.0
                         with shared_state.lock:
                             shared_state.gimbal_el = curr_el
                             shared_state.gimbal_az = curr_ui_az
                             shared_state.gimbal_att_ts = time.time()
                     continue
-                #成功取到指令
-                target_az = float(active_cmd["az"])
-                target_el = float(active_cmd["el"])
+                #若成功取到指令，下发指令到云台
+                target_az = float(active_cmd["az"])#方位角
+                target_el = float(active_cmd["el"])#俯仰角
                 cmd_start_t = time.time()
                 gimbal.set_attitude(elevation=target_el, azimuth=target_az)
                 with shared_state.lock:
-                    shared_state.active_cmd_id = int(active_cmd["cmd_id"])
-                    shared_state.is_settled = False
-            #当前有指令在执行
+                    shared_state.active_cmd_id = int(active_cmd["cmd_id"])#设置当前执行指令的ID
+                    shared_state.active_track_id = int(active_cmd.get("track_id", -1))
+                    shared_state.is_settled = False#转动到位标志重置
+            #2.若当前有指令在执行(执行态)
             now_t = time.time()
+            #检查指令队列中是否有更新的指令，如果有则取出最新的一条（丢弃旧指令），准备进行抢占式执行判断
             newer_cmd = drain_latest_gimbal_cmd()
             if newer_cmd is not None:
-                new_az = float(newer_cmd["az"])
-                new_el = float(newer_cmd["el"])
+                new_az = float(newer_cmd["az"])#新指令的方位角
+                new_el = float(newer_cmd["el"])#新指令的俯仰角  
+                #计算新指令与当前指令的角度差
                 d_az = abs(angular_diff(new_az, target_az))
                 d_el = abs(new_el - target_el)
-                d_total = math.hypot(d_az, d_el)#计算新指令与当前指令的角度差
-
-                if d_total > GIMBAL_PREEMPT_DEG:#如果角度差>预设的抢占阈值，则立即执行新指令
+                d_total = math.hypot(d_az, d_el)
+                #如果角度差>预设的抢占阈值，则立即执行新指令
+                if d_total > GIMBAL_PREEMPT_DEG:
                     target_az = new_az
                     target_el = new_el
                     active_cmd = newer_cmd
@@ -322,16 +492,16 @@ def gimbal_control_thread(gimbal):
                     gimbal.set_attitude(elevation=target_el, azimuth=target_az)
                     with shared_state.lock:
                         shared_state.active_cmd_id = int(active_cmd["cmd_id"])
+                        shared_state.active_track_id = int(active_cmd.get("track_id", -1))
                         shared_state.is_settled = False
+                # 如果角度差<=抢占阈值，视为同一位置，直接丢弃新指令
                 else:
-                    active_cmd["cmd_id"] = int(newer_cmd["cmd_id"])
-                    with shared_state.lock:
-                        shared_state.active_cmd_id = int(active_cmd["cmd_id"])
+                    pass
 
             real_att = gimbal.get_attitude()
             if real_att:
                 curr_el, curr_az, _ = real_att
-                curr_ui_az = (curr_az - 90.0) % 360.0
+                curr_ui_az = (curr_az - GIMBAL_AZ_BASE) % 360.0
                 err_az = abs(angular_diff(target_az, curr_az))
                 err_el = abs(curr_el - target_el)
 
@@ -344,21 +514,33 @@ def gimbal_control_thread(gimbal):
                     with shared_state.lock:
                         shared_state.is_settled = True
                         shared_state.settled_cmd_id = shared_state.active_cmd_id
+                        shared_state.settled_track_id = shared_state.active_track_id
                         shared_state.settled_ts = now_t
 
                     laser_dist = read_laser_distance()
-                    trigger_t = time.time()
-                    with shared_state.lock:
-                        prev_laser_ts = shared_state.laser_ts
-                        shared_state.valid_laser_dist = laser_dist
-                        shared_state.latest_dist = laser_dist
-                        shared_state.laser_ts = trigger_t
-                        active_cmd_id = shared_state.active_cmd_id
-                    if prev_laser_ts > 0:
-                        dt_laser = trigger_t - prev_laser_ts
-                        print(f"[Laser] Triggered cmd_id={active_cmd_id}, dist={laser_dist:.2f}m, interval={dt_laser:.3f}s")
+                    if laser_dist is not None:
+                        trigger_t = time.time()
+                        with shared_state.lock:
+                            prev_laser_ts = shared_state.laser_ts
+                            shared_state.valid_laser_dist = laser_dist
+                            shared_state.latest_dist = laser_dist
+                            shared_state.laser_ts = trigger_t
+                            shared_state.laser_track_id = shared_state.active_track_id
+                            active_cmd_id = shared_state.active_cmd_id
+                            active_track_id = shared_state.active_track_id
+                        if prev_laser_ts > 0:
+                            dt_laser = trigger_t - prev_laser_ts
+                            print(
+                                f"[Laser] Triggered cmd_id={active_cmd_id}, track_id={active_track_id}, "
+                                f"dist={laser_dist:.2f}m, interval={dt_laser:.3f}s"
+                            )
+                        else:
+                            print(
+                                f"[Laser] Triggered cmd_id={active_cmd_id}, track_id={active_track_id}, "
+                                f"dist={laser_dist:.2f}m, interval=first"
+                            )
                     else:
-                        print(f"[Laser] Triggered cmd_id={active_cmd_id}, dist={laser_dist:.2f}m, interval=first")
+                        print("[Laser] No valid laser distance, use mono distance")
                     active_cmd = None
                     continue
 
@@ -377,26 +559,26 @@ def gimbal_control_thread(gimbal):
 def get_dynamic_tracking_params(distance_m):
     """
     根据目标距离生成动态参数（连续插值）。
-    冷启动/无效测距时默认按 50m 处理。
+    冷启动/无效测距时默认按 DEFAULT_TRACKING_DISTANCE_M 处理。
     """
     if (distance_m is None) or (distance_m <= 0):
-        distance_m = 50.0
+        distance_m = DEFAULT_TRACKING_DISTANCE_M
 
     dist_nodes = np.array([50.0, 100.0, 200.0, 400.0, 500.0], dtype=float)
     d = float(np.clip(distance_m, dist_nodes[0], dist_nodes[-1]))
 
-    max_res_az = float(np.interp(d, dist_nodes, [3.5, 2.0, 1.2, 0.8, 0.6]))
-    max_vel_az = float(np.interp(d, dist_nodes, [40.0, 25.0, 15.0, 8.0, 5.0]))
-    dist_thresh = float(np.interp(d, dist_nodes, [5.0, 3.0, 2.0, 1.5, 1.0]))
+    max_res_az = float(np.interp(d, dist_nodes, [2.5, 1.8, 1.2, 0.9, 0.7]))
+    max_vel_az = float(np.interp(d, dist_nodes, [30.0, 20.0, 12.0, 8.0, 5.0]))
+    dist_thresh = float(np.interp(d, dist_nodes, [4.0, 3.0, 2.0, 1.3, 0.9]))
 
     return {
         "DIST_M": d,
-        "MAX_RES_AZ": max_res_az,
+        "MAX_RES_AZ": max_res_az,#单帧角度的最大修正
         "MAX_RES_EL": max_res_az * 0.5,
-        "MAX_VEL_AZ": max_vel_az,
+        "MAX_VEL_AZ": max_vel_az,#速度限幅
         "MAX_VEL_EL": max_vel_az * 0.5,
-        "DIST_THRESH": dist_thresh,
-        "MIN_DT": 0.03,  # 15 FPS 场景下的保护下限
+        "DIST_THRESH": dist_thresh,#判定“当前帧的检测点”与“上一帧的追踪轨迹”是否为同一个目标的最大角度欧氏距离。
+        "MIN_DT": 0.08,  # 10 FPS 场景下的保护下限
     }
 
 class RangeSmoother:
@@ -423,7 +605,7 @@ def ui_to_ctrl_angles(ui_az, ui_el):
     rel_az = ui_az
     if rel_az > 180.0:
         rel_az -= 360.0
-    ctrl_az = 90.0 + rel_az
+    ctrl_az = GIMBAL_AZ_BASE + rel_az
     ctrl_el = ui_el
     if ctrl_az < 0.0: ctrl_az = 0.0
     if ctrl_az > 350.0: ctrl_az = 350.0
@@ -432,145 +614,337 @@ def ui_to_ctrl_angles(ui_az, ui_el):
 # ==========================================
 # 新增模块 2：单目标卡尔曼追踪器 (AngleTracker)
 # ==========================================
-class Track:
+class StandardKalmanTrack:
     _id_count = 0
     def __init__(self, ui_az, ui_el):
-        Track._id_count += 1
-        self.id = Track._id_count
+        StandardKalmanTrack._id_count += 1
+        self.id = StandardKalmanTrack._id_count
         
-        # 状态: [方位角, 俯仰角, 方位角速度, 俯仰角速度]
-        self.state = np.array([ui_az, ui_el, 0.0, 0.0])
+        # 状态矩阵: X = [[az], [el], [v_az], [v_el]]
+        self.state = np.array([[ui_az], [ui_el], [0.0], [0.0]], dtype=float)
+        
+        # 协方差矩阵 P
+        self.P = np.diag([1.0, 1.0, 10.0, 10.0])
+        
+        # 过程噪声 / 测量噪声默认值
+        self.q_pos = 0.05
+        self.q_vel = 0.2
+        self.r_az = 3.5**2
+        self.r_el = 1.8**2
         
         self.hit_streak = 1        # 连续命中次数 (用于建轨确认)
-        self.time_since_update = 0 # 连续丢失次数 (用于注销)
+        self.time_since_update = 0 # 连丢次数
         
-        # 简化版卡尔曼增益 (Alpha-Beta 滤波参数)
-        self.alpha = 0.6  # 位置信任度
-        self.beta = 0.4   # 速度信任度
-        self.max_res_az = 3.5
-        self.max_res_el = 1.8
+        # 历史队列
+        self.history = deque(maxlen=30)
+        self.history.append((self.state.copy(), self.P.copy()))
+        
         self.max_vel_az = 40.0
         self.max_vel_el = 20.0
         self.min_dt = 0.03
+        self.dist_thresh = 4.0
+        self.last_mono_dist = None
+        self.mono_ts = 0.0
+        self.last_laser_dist = None
+        self.laser_ts = 0.0
+        self.last_sent_dist = None
+
+    def set_mono_distance(self, dist, ts):
+        d = _parse_positive_float(dist)
+        if d is None:
+            return
+        self.last_mono_dist = d
+        self.mono_ts = float(ts)
+
+    def set_laser_distance(self, dist, ts):
+        d = _parse_positive_float(dist)
+        if d is None:
+            return
+        self.last_laser_dist = d
+        self.laser_ts = float(ts)
+
+    def get_param_distance(self, curr_time):
+        if self.last_laser_dist is not None and (curr_time - self.laser_ts) <= LASER_DIST_TTL:
+            return self.last_laser_dist
+        if self.last_mono_dist is not None and (curr_time - self.mono_ts) <= MONO_DIST_TTL:
+            return self.last_mono_dist
+        if self.last_mono_dist is not None:
+            return self.last_mono_dist
+        if self.last_laser_dist is not None:
+            return self.last_laser_dist
+        return None
 
     def set_dynamic_params(self, params):
         if not params:
             return
-        self.max_res_az = float(params.get("MAX_RES_AZ", self.max_res_az))
-        self.max_res_el = float(params.get("MAX_RES_EL", self.max_res_el))
-        self.max_vel_az = float(params.get("MAX_VEL_AZ", self.max_vel_az))
-        self.max_vel_el = float(params.get("MAX_VEL_EL", self.max_vel_el))
-        self.min_dt = float(params.get("MIN_DT", self.min_dt))
+        
+        max_res_az = float(params.get('MAX_RES_AZ', 3.5))
+        max_res_el = float(params.get('MAX_RES_EL', 1.8))
+        self.r_az = max_res_az**2
+        self.r_el = max_res_el**2
+        
+        self.max_vel_az = float(params.get('MAX_VEL_AZ', self.max_vel_az))
+        self.max_vel_el = float(params.get('MAX_VEL_EL', self.max_vel_el))
+        self.min_dt = float(params.get('MIN_DT', self.min_dt))
+        self.dist_thresh = float(params.get('DIST_THRESH', self.dist_thresh))
 
     def predict(self, dt):
-        """盲猜未来状态"""
-        # 位置 = 老位置 + 速度 * 时间
-        pred_az = (self.state[0] + self.state[2] * dt) % 360.0
-        pred_el = self.state[1] + self.state[3] * dt
-        self.state[0] = pred_az
-        self.state[1] = pred_el
-        self.time_since_update += 1 # 默认加1，如果匹配上了会在 update 里清零
+        """标准 Kalman Predict"""
+        if dt < self.min_dt:
+            dt = self.min_dt
+            
+        # 状态转移矩阵 F
+        F = np.array([
+            [1, 0, dt,  0],
+            [0, 1,  0, dt],
+            [0, 0,  1,  0],
+            [0, 0,  0,  1]
+        ], dtype=float)
+        
+        # 过程噪声 Q
+        Q = np.diag([self.q_pos, self.q_pos, self.q_vel, self.q_vel])
+        
+        # 预测状态和协方差
+        self.state = np.dot(F, self.state)
+        # 防止角度跳变，对 Azimuth 进行取模
+        self.state[0, 0] = self.state[0, 0] % 360.0
+        self.P = np.dot(np.dot(F, self.P), F.T) + Q
+        
+        self.time_since_update += 1
+        self.history.append((self.state.copy(), self.P.copy()))
 
     def update(self, meas_az, meas_el, dt):
-        """融合真实测量值，修正速度和位置 (残差门控 + 速度限幅)"""
+        """标准 Kalman Update"""
         self.time_since_update = 0
         self.hit_streak += 1
 
-        if dt < self.min_dt:
-            dt = self.min_dt
+        Z = np.array([[meas_az], [meas_el]], dtype=float)
+        
+        # 观测矩阵 H
+        H = np.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 0]
+        ], dtype=float)
+        
+        # 观测测量噪声 R
+        R = np.diag([self.r_az, self.r_el])
+        
+        # 计算残差 Y = Z - HX
+        Y = Z - np.dot(H, self.state)
+        
+        # 核心：处理 Azimuth 的残差，防止角度回环跳变
+        Y[0, 0] = angular_diff(Z[0, 0], self.state[0, 0])
+        
+        # S = H * P * H^T + R
+        S = np.dot(np.dot(H, self.P), H.T) + R
+        
+        # 卡尔曼增益 K = P * H^T * S^-1
+        try:
+            K = np.dot(np.dot(self.P, H.T), np.linalg.inv(S))
+        except np.linalg.LinAlgError:
+            print(f"[Tracker] Kalman matrix inversion failed for track {self.id}")
+            K = np.zeros((4, 2), dtype=float)
 
-        raw_res_az = angular_diff(meas_az, self.state[0])
-        raw_res_el = meas_el - self.state[1]
-
-        res_az = max(min(raw_res_az, self.max_res_az), -self.max_res_az)
-        res_el = max(min(raw_res_el, self.max_res_el), -self.max_res_el)
-
-        inst_vx = res_az / dt
-        inst_vy = res_el / dt
-
-        self.state[2] = self.state[2] + self.beta * inst_vx
-        self.state[3] = self.state[3] + self.beta * inst_vy
-
-        self.state[2] = max(min(self.state[2], self.max_vel_az), -self.max_vel_az)
-        self.state[3] = max(min(self.state[3], self.max_vel_el), -self.max_vel_el)
-
-        self.state[0] = (self.state[0] + self.alpha * res_az) % 360.0
-        self.state[1] = self.state[1] + self.alpha * res_el
+        # X = X + K * Y
+        self.state = self.state + np.dot(K, Y)
+        # 更新后再次对 Az 取模
+        self.state[0, 0] = self.state[0, 0] % 360.0
+        
+        # 速度限幅保护
+        self.state[2, 0] = np.clip(self.state[2, 0], -self.max_vel_az, self.max_vel_az)
+        self.state[3, 0] = np.clip(self.state[3, 0], -self.max_vel_el, self.max_vel_el)
+        
+        # P = (I - K * H) * P
+        I = np.eye(4)
+        self.P = np.dot((I - np.dot(K, H)), self.P)
+        
+        # 更新历史
+        if len(self.history) > 0:
+            self.history[-1] = (self.state.copy(), self.P.copy())
+        else:
+            self.history.append((self.state.copy(), self.P.copy()))
 
     def get_future_position(self, dt_delay):
         """打提前量：获取未来预测角度"""
-        fut_az = (self.state[0] + self.state[2] * dt_delay) % 360.0
-        fut_el = self.state[1] + self.state[3] * dt_delay
+        fut_az = (self.state[0, 0] + self.state[2, 0] * dt_delay) % 360.0
+        fut_el = self.state[1, 0] + self.state[3, 0] * dt_delay
         return fut_az, fut_el
+        
+    def predict_future_n_steps(self, n=10, dt=0.066):
+        """多帧预测接口"""
+        if dt < self.min_dt:
+            dt = self.min_dt
+            
+        F = np.array([
+            [1, 0, dt,  0],
+            [0, 1,  0, dt],
+            [0, 0,  1,  0],
+            [0, 0,  0,  1]
+        ], dtype=float)
+        Q = np.diag([self.q_pos, self.q_pos, self.q_vel, self.q_vel])
+        
+        temp_state = self.state.copy()
+        temp_P = self.P.copy()
+        
+        future_states = []
+        future_Ps = []
+        
+        for _ in range(n):
+            temp_state = np.dot(F, temp_state)
+            temp_state[0, 0] = temp_state[0, 0] % 360.0
+            temp_P = np.dot(np.dot(F, temp_P), F.T) + Q
+            future_states.append(temp_state.copy())
+            future_Ps.append(temp_P.copy())
+            
+        return future_states, future_Ps
 
 # ==========================================
 # 新增模块 3：多目标调度大脑 (MultiTargetTracker)
 # ==========================================
 class MultiTargetTracker:
-    def __init__(self, max_lost_frames=10, distance_threshold=20.0):
+    def __init__(
+        self,
+        max_lost_frames=15,
+        base_distance_threshold=4.0,
+        distance_threshold=None,
+    ):
         self.tracks = []
         self.max_lost_frames = max_lost_frames
-        self.distance_threshold = distance_threshold # 最大匹配角度差
+        # Backward compatibility: keep supporting old constructor arg `distance_threshold`.
+        if distance_threshold is not None:
+            self.base_distance_threshold = float(distance_threshold)
+        else:
+            self.base_distance_threshold = float(base_distance_threshold)
 
-    def update(self, measurements, dt, params=None):
+    def update(self, measurements, dt, params=None, now_t=None):
         """
-        measurements: 当前帧所有检测到的绝对角度列表 [[az1, el1], [az2, el2], ...]
+        measurements: 当前帧所有检测目标，可为:
+            1) [az, el]
+            2) {"az": az, "el": el, "mono_dist": d}
         dt: 距离上一帧经过的时间(秒)
         """
+        if now_t is None:
+            now_t = time.time()
+
         if params and ("DIST_THRESH" in params):
-            self.distance_threshold = float(params["DIST_THRESH"])
+            self.base_distance_threshold = float(params["DIST_THRESH"])
+
+        normalized_measurements = []
+        for meas in measurements:
+            if isinstance(meas, dict):
+                az = meas.get("az", None)
+                el = meas.get("el", None)
+                mono_dist = meas.get("mono_dist", None)
+            elif isinstance(meas, (list, tuple)) and len(meas) >= 2:
+                az = meas[0]
+                el = meas[1]
+                mono_dist = meas[2] if len(meas) >= 3 else None
+            else:
+                continue
+
+            try:
+                az = float(az) % 360.0
+                el = float(el)
+            except (TypeError, ValueError):
+                continue
+            mono_dist = _parse_positive_float(mono_dist)
+            normalized_measurements.append({
+                "az": az,
+                "el": el,
+                "mono_dist": mono_dist,
+            })
 
         # 1. 预测所有已有 Track 的新位置
         for track in self.tracks:
-            track.set_dynamic_params(params)
+            if params:
+                track.set_dynamic_params(params)
+            else:
+                dist_for_track = track.get_param_distance(now_t)
+                if dist_for_track is not None:
+                    track.set_dynamic_params(get_dynamic_tracking_params(dist_for_track))
+                else:
+                    track.dist_thresh = self.base_distance_threshold
             track.predict(dt)
             
         # 如果当前帧没检测到东西，直接清理丢失目标并返回
-        if len(measurements) == 0:
+        if len(normalized_measurements) == 0:
             self.tracks = [t for t in self.tracks if t.time_since_update < self.max_lost_frames]
             return self.tracks
 
         if len(self.tracks) == 0:
             # 全是新目标
-            for meas in measurements:
-                t = Track(meas[0], meas[1])  # create kalman track for each measurement
-                t.set_dynamic_params(params)
+            for meas in normalized_measurements:
+                t = StandardKalmanTrack(meas["az"], meas["el"])
+                t.set_mono_distance(meas["mono_dist"], now_t)
+                if params:
+                    t.set_dynamic_params(params)
+                else:
+                    dist_for_track = t.get_param_distance(now_t)
+                    if dist_for_track is not None:
+                        t.set_dynamic_params(get_dynamic_tracking_params(dist_for_track))
+                    else:
+                        t.dist_thresh = self.base_distance_threshold
                 self.tracks.append(t)
             return self.tracks
 
-        # 2. 计算代价矩阵 (角度距离)
-        cost_matrix = np.zeros((len(self.tracks), len(measurements)))
+        # 2. 计算代价矩阵 (角度欧氏距离)
+        cost_matrix = np.zeros((len(self.tracks), len(normalized_measurements)))
         for t, track in enumerate(self.tracks):
-            for m, meas in enumerate(measurements):
-                diff_az = angular_diff(meas[0], track.state[0])
-                diff_el = meas[1] - track.state[1]
+            for m, meas in enumerate(normalized_measurements):
+                diff_az = angular_diff(meas["az"], track.state[0, 0])
+
+                diff_el = meas["el"] - track.state[1, 0]
                 distance = np.sqrt(diff_az**2 + diff_el**2)
                 cost_matrix[t, m] = distance
 
         # 3. 匈牙利匹配
         track_indices, meas_indices = linear_sum_assignment(cost_matrix)
 
-        # 4. 更新匹配成功的 Track
-        unmatched_measurements = set(range(len(measurements)))
+        # 4. 更新匹配成功的 Track (加入协方差动态门限)
+        unmatched_measurements = set(range(len(normalized_measurements)))
+        matched_tracks = set()
         for t_idx, m_idx in zip(track_indices, meas_indices):
-            if cost_matrix[t_idx, m_idx] < self.distance_threshold:
-                self.tracks[t_idx].update(measurements[m_idx][0], measurements[m_idx][1], dt)
+            track = self.tracks[t_idx]
+            
+            # 使用协方差评估不确定性
+            uncertainty = np.sqrt(track.P[0, 0] + track.P[1, 1])
+            # 动态欧氏门限：基础残差 + 协方差不确定性 * 膨胀系数(1.5)
+            dynamic_thresh = track.dist_thresh + (uncertainty * 1.5)
+            
+            if cost_matrix[t_idx, m_idx] < dynamic_thresh:
+                meas = normalized_measurements[m_idx]
+                track.update(meas["az"], meas["el"], dt)
+                track.set_mono_distance(meas["mono_dist"], now_t)
                 unmatched_measurements.discard(m_idx)
+                matched_tracks.add(t_idx)
             else:
-                # 距离太远，不认为是同一个目标
                 pass
+
+        # 未匹配轨迹衰减稳定帧，避免历史累计导致“永久霸榜”
+        for t_idx, track in enumerate(self.tracks):
+            if t_idx not in matched_tracks:
+                track.hit_streak = max(0, track.hit_streak - HIT_STREAK_DECAY)
 
         # 5. 为没匹配上的坐标创建新 Track
         for m_idx in unmatched_measurements:
-            meas = measurements[m_idx]
-            t = Track(meas[0], meas[1])
-            t.set_dynamic_params(params)
+            meas = normalized_measurements[m_idx]
+            t = StandardKalmanTrack(meas["az"], meas["el"])
+            t.set_mono_distance(meas["mono_dist"], now_t)
+            if params:
+                t.set_dynamic_params(params)
+            else:
+                dist_for_track = t.get_param_distance(now_t)
+                if dist_for_track is not None:
+                    t.set_dynamic_params(get_dynamic_tracking_params(dist_for_track))
+                else:
+                    t.dist_thresh = self.base_distance_threshold
             self.tracks.append(t)
 
         # 6. 删除丢失太久的 Track
         self.tracks = [t for t in self.tracks if t.time_since_update < self.max_lost_frames]
 
         return self.tracks
+
 # ==========================================
 # 4. 核心解算 V8 (修改版：基准水平90度)
 # ==========================================
@@ -592,44 +966,6 @@ def calculate_angles(cam_key, cx, cy, cfg=None):
 
     return ui_az, ui_el
 # ==========================================
-# 5. 云台到位检测 (针对真实串口优化)
-# ==========================================
-def wait_gimbal_settle(gimbal, target_el, target_az, threshold=0.5, timeout=0.8):
-    start_t = time.time()
-    target_az_norm = target_az % 360.0
-    loop_cnt = 0 # 用于控制打印频率
-    err_az = float("inf")
-    
-    while (time.time() - start_t) < timeout:
-        real_att = gimbal.get_attitude() # 调用驱动 query_angles
-        
-        if not real_att:
-            time.sleep(0.05)
-            continue
-            
-        curr_el, curr_az, _ = real_att 
-        curr_az_norm = curr_az % 360.0
-        
-        err_el = abs(curr_el - target_el)
-        err_az = abs(curr_az_norm - target_az_norm)
-        if err_az > 180:
-            err_az = 360 - err_az
-            
-        # === 新增：Phase 4 循环追踪打印 (降频打印避免刷屏) ===
-        if loop_cnt % 2 == 0:
-            print(f"[Phase 4: 云台闭环] 等待到位... 目标[Az:{target_az:.1f}°] | 当前[Az:{curr_az:.1f}°] | 误差:{err_az:.1f}°")
-        
-        if err_el < threshold and err_az < threshold:
-            print(f"[Phase 4: 云台闭环] 已到位! 耗时: {(time.time() - start_t):.3f}s")
-            return True
-            
-        loop_cnt += 1
-        time.sleep(0.05) # 降低查询频率，避免堵塞串口 Tx/Rx
-        
-    print(f"[Phase 4: 云台闭环] 等待超时 ({timeout}s)! 当前误差 Az:{err_az:.1f}° (物理云台还在移动追赶中)")
-    return False
-
-# ==========================================
 # 6. 主逻辑 V9 (多目标预测与云台调度)
 # ==========================================
 def main():
@@ -640,7 +976,7 @@ def main():
             print("[Error] USE_MOCK_GIMBAL=True, but mock_gimbal.py import failed.")
             return
         print("[Init] Connecting to Mock Gimbal at MOCK_COM...")
-        gimbal = MockGimbalAdapter(port="MOCK_COM")
+        gimbal = MockGimbalAdapter(port="MOCK_COM", az_base=GIMBAL_AZ_BASE)
     else:
         print(f"[Init] Connecting to Gimbal at {GIMBAL_PORT}...")
         gimbal = GT06ZAdapter(port=GIMBAL_PORT)
@@ -651,9 +987,8 @@ def main():
     if not gimbal.wait_ready():
         print("[Warning] Gimbal not ready instantly, wait...")
 
-    #start background threads for network and laser
+    # start background threads for network and gimbal control
     threading.Thread(target=rk3588_thread, daemon=True).start()
-    threading.Thread(target=laser_thread_mock, daemon=True).start()
     threading.Thread(target=gimbal_control_thread, args=(gimbal,), daemon=True).start()
 
     imu = None
@@ -671,21 +1006,26 @@ def main():
     print("=== System V9.0 (Predictive Tracking & Scheduling) Running ===")
 
     # 初始化追踪大脑
-    tracker = MultiTargetTracker(max_lost_frames=10, distance_threshold=4.0)
-    range_smoother = RangeSmoother(init_d=50.0, alpha=0.2, max_rate_mps=30.0)
+    tracker = MultiTargetTracker(max_lost_frames=12, distance_threshold=1.2)
     
     # 状态机与调度变量
     master_id = None
     lock_timer = 0.0
     LOCK_DURATION = 1.5      # 锁定目标的最长驻留时间
-    PREDICT_DELAY = 0.4      # 系统与物理响应总延迟 (打提前量)
+    PREDICT_DELAY = 0.25     # 系统与物理响应总延迟 (打提前量)
     CONFIRM_HITS = 3         # 连续追踪多少帧才确认为合法目标
-    MAX_DT = 0.5             # Clamp dt to avoid model divergence
+    MAX_DT = 0.25            # Clamp dt to avoid model divergence
     global_cmd_id = 0
     last_sent_ctrl_az = None
     last_sent_ctrl_el = None
     
     last_time = time.time()
+    # 统计日志：接收坐标与UI发送ID
+    recv_obj_total = 0
+    recv_unique_boxes = set()  # {(x1,y1,x2,y2), ...}
+    ui_send_total = 0
+    ui_send_counter = Counter()  # {target_id: send_count}
+    stats_last_print = last_time
 
     while True:
         try:
@@ -700,22 +1040,15 @@ def main():
             if not packet_queue:
                 time.sleep(0.005) # 稍微让出 CPU
                 continue
+            #计算两包UDP数据的间隔时间
             dt = curr_time - last_time
             if dt <= 0:
-                dt = 1.0 / 15.0
+                dt = 1.0 / 10.0
+            #有可能两包数据间隔很久，为了防止追踪器模型发散，限制最大 dt
             if dt > MAX_DT:
                 dt = MAX_DT
             last_time = curr_time
 
-            with shared_state.lock:
-                shared_gimbal_az = shared_state.gimbal_az
-                shared_gimbal_el = shared_state.gimbal_el
-                valid_laser_dist = shared_state.valid_laser_dist
-                laser_ts = shared_state.laser_ts
-            laser_for_params = valid_laser_dist if (curr_time - laser_ts) <= LASER_DIST_TTL else 52.5
-            smooth_dist = range_smoother.update(laser_for_params, dt)
-            dyn_params = get_dynamic_tracking_params(smooth_dist)
-            
             while len(packet_queue) > 1: packet_queue.popleft()
             pkg = packet_queue.popleft()
             
@@ -725,13 +1058,28 @@ def main():
 
             logic_id, cfg = get_camera_params(board_str, cam_idx)
             if logic_id is None: continue 
-           
+
             # --- 2. 坐标解析为绝对角度 ---
             current_measurements = []
-            for obj_item in raw_objs:
-                if isinstance(obj_item, dict): rect = obj_item.get("box", [])
-                else: rect = obj_item
-                if len(rect) < 4: continue
+            parsed_objs = parse_udp_objects(raw_objs)
+
+            with shared_state.lock:
+                shared_gimbal_az = shared_state.gimbal_az
+                shared_gimbal_el = shared_state.gimbal_el
+                valid_laser_dist = shared_state.valid_laser_dist
+                laser_ts = shared_state.laser_ts
+                laser_track_id = shared_state.laser_track_id
+
+            for obj_item in parsed_objs:
+                rect = obj_item["box"]
+                mono_dist = obj_item["mono_dist"]
+                recv_obj_total += 1
+                recv_unique_boxes.add((
+                    int(round(rect[0])),
+                    int(round(rect[1])),
+                    int(round(rect[2])),
+                    int(round(rect[3])),
+                ))
                 
                 cx = (rect[0] + rect[2]) / 2.0
                 cy = (rect[1] + rect[3]) / 2.0
@@ -739,11 +1087,37 @@ def main():
                 res = calculate_angles(logic_id, cx, cy, cfg)
                 if res:
                     ui_az, ui_el = res
-                    current_measurements.append([ui_az, ui_el])
+                    d_az_to_target = angular_diff(ui_az, shared_gimbal_az)
+                    d_el_to_target = ui_el - shared_gimbal_el
+                    # turn_dir = get_turn_direction_label(d_az_to_target, d_el_to_target)
+                    current_measurements.append({
+                        "az": ui_az,
+                        "el": ui_el,
+                        "mono_dist": mono_dist,
+                    })
                     # === 新增：Phase 1 打印 ===
-                    print(f"\n[Phase 1: 视觉解析] 收到目标 cx={cx:.1f}, cy={cy:.1f} -> 解算绝对角度: Az={ui_az:.2f}°, El={ui_el:.2f}°")
+                    if mono_dist is not None:
+                        print(
+                            f"\n[Phase 1: 视觉解析] 收到目标 cx={cx:.1f}, cy={cy:.1f}, mono={mono_dist:.1f}m"
+                            f" -> 解算绝对角度: Az={ui_az:.2f}°, El={ui_el:.2f}°"
+                        )
+                    else:
+                        print(
+                            f"\n[Phase 1: 视觉解析] 收到目标 cx={cx:.1f}, cy={cy:.1f}"
+                            f" -> 解算绝对角度: Az={ui_az:.2f}°, El={ui_el:.2f}°"
+                        )
+                    # print(
+                    #     f"[DirCheck] gimbal_ui=(Az={shared_gimbal_az:.2f}°, El={shared_gimbal_el:.2f}°) "
+                    #     f"target_delta=(dAz={d_az_to_target:.2f}°, dEl={d_el_to_target:.2f}°) => turn={turn_dir}"
+                    # )
             # --- 3. 喂给 Tracker 更新所有目标轨迹 ---
-            active_tracks = tracker.update(current_measurements, dt, params=dyn_params)
+            active_tracks = tracker.update(current_measurements, dt, now_t=curr_time)
+
+            # 将最新激光结果绑定到对应轨迹，避免目标切换时距离串目标
+            if (curr_time - laser_ts) <= LASER_DIST_TTL and laser_track_id >= 0:
+                laser_track = next((t for t in active_tracks if t.id == laser_track_id), None)
+                if laser_track is not None:
+                    laser_track.set_laser_distance(valid_laser_dist, laser_ts)
             
             # 过滤出合法的、可以被锁定的目标 (连续追踪超过 CONFIRM_HITS 次的)且没有丢失的目标 (time_since_update == 0)
             valid_tracks = [
@@ -757,29 +1131,45 @@ def main():
             
             if master_track is None or lock_timer <= 0:
                 # 状态 A：寻找/切换新目标 (SEARCHING)
-                master_id = None
+                best_track = None
+                best_score = -float('inf')
+                
+                curr_gimbal_az = shared_gimbal_az
+                curr_gimbal_el = shared_gimbal_el
+                #基于威胁算法的多目标抓捕优先级评估：(这个地方需要给出全部排序，不能只挑一个最优的)
                 if len(valid_tracks) > 0:
-                    # 策略：找当前距离云台物理角度最近的目标
-                    curr_gimbal_az = shared_gimbal_az
-                    curr_gimbal_el = shared_gimbal_el
-                    
-                    best_track = None
-                    min_dist = float('inf')
                     for t in valid_tracks:
-                        dist_az = angular_diff(t.state[0], curr_gimbal_az)
-                        dist_el = t.state[1] - curr_gimbal_el
+                        # 1. 速度因子 (正权 2.0)：提取目标的合成角速度大小
+                        v_mag = np.sqrt(t.state[2, 0]**2 + t.state[3, 0]**2)
+                        speed_score = v_mag * 2.0
+                        
+                        # 2. 距离因子 (负权 1.0)：计算目标当前角度与云台物理角度的距离
+                        dist_az = angular_diff(t.state[0, 0], curr_gimbal_az)
+                        dist_el = t.state[1, 0] - curr_gimbal_el
                         dist = np.sqrt(dist_az**2 + dist_el**2)
-                        if dist < min_dist:
-                            min_dist = dist
+                        distance_score = -dist * 1.0
+                        
+                        # 3. 稳定性因子（弱权且饱和）：避免 hit_streak 越积越大主导调度
+                        stability_level = min(t.hit_streak, STABILITY_HIT_CAP)
+                        stability_score = math.log1p(stability_level) * STABILITY_WEIGHT
+                        
+                        # 综合威胁度得分
+                        threat_score = speed_score + distance_score + stability_score
+                        
+                        # 当前锁定目标 15% 惯性加成防抖动
+                        if t.id == master_id:
+                            # 给原得分基础上乘以 1.15
+                            threat_score *= 1.15
+                            
+                        if threat_score > best_score:
+                            best_score = threat_score
                             best_track = t
                             
                     if best_track:
                         master_id = best_track.id
                         lock_timer = LOCK_DURATION
                         master_track = best_track
-                        # print(f"[Scheduler] 切换锁定目标 ID: {master_id}, 倒计时重置 {LOCK_DURATION}s")
-                        # === 修改：Phase 2 打印 ===
-                        print(f"[Phase 2: 目标调度] 成功锁定目标 ID: {master_id} (已连续追踪 {master_track.hit_streak} 帧). 准备交由云台跟踪!")
+                        print(f"[Phase 2: 目标调度] 基于威胁度(v={np.sqrt(master_track.state[2,0]**2+master_track.state[3,0]**2):.1f}°/s, dist={np.sqrt(angular_diff(master_track.state[0,0], curr_gimbal_az)**2 + (master_track.state[1,0]-curr_gimbal_el)**2):.1f}°) 成功锁定目标 ID: {master_id}. 准备交由云台跟踪!")
             # --- 5. 状态机：物理执行与测距 (LOCKED) ---
             if master_track is not None:
                 lock_timer -= dt
@@ -790,7 +1180,7 @@ def main():
                 # B. 转换为云台控制角
                 ctrl_az, ctrl_el = ui_to_ctrl_angles(fut_az, fut_el)
                 # === 新增：Phase 3 打印 ===
-                print(f"[Phase 3: 预测控制] 目标当前估算Az={master_track.state[0]:.2f}°, 速度={master_track.state[2]:.2f}°/s")
+                print(f"[Phase 3: 预测控制] 目标当前估算Az={master_track.state[0, 0]:.2f}°, 速度={master_track.state[2, 0]:.2f}°/s")
                 print(f"                   -> 打提前量({PREDICT_DELAY}s后)Az={fut_az:.2f}°, El={fut_el:.2f}° | 下发云台指令: Az={ctrl_az:.2f}°, El={ctrl_el:.2f}°")
                 # C. 非阻塞下发：只推送最新控制指令给云台线程
                 need_send = True
@@ -804,6 +1194,7 @@ def main():
                     global_cmd_id += 1
                     push_latest_gimbal_cmd({
                         "cmd_id": global_cmd_id,
+                        "track_id": int(master_id) if master_id is not None else -1,
                         "az": ctrl_az,
                         "el": ctrl_el,
                         "ts": curr_time,
@@ -811,22 +1202,31 @@ def main():
                     last_sent_ctrl_az = ctrl_az
                     last_sent_ctrl_el = ctrl_el
 
-                with shared_state.lock:
-                    laser_dist_now = shared_state.valid_laser_dist
-                    laser_ts_now = shared_state.laser_ts
-                master_laser_dist = laser_dist_now if (curr_time - laser_ts_now) <= LASER_DIST_TTL else 52.5
-                
                 # E. 向 UI 发送数据包 (遍历所有合法的追踪档案)
                 # 这样即使云台在打 ID 1，UI 上也能看到 ID 2, 3 的平滑轨迹
                 for t in valid_tracks:
-                    send_dist = master_laser_dist if (t.id == master_id) else 52.5
+                    send_dist, dist_source = select_track_distance(t, master_id, curr_time)
+                    if math.isfinite(send_dist) and dist_source.startswith("mono"):
+                        t.last_sent_dist = send_dist
                     
                     sender.send_status(
                         board_str, cam_idx, t.id,  # 这里传入的是持续追踪的 ID，而不是一闪而过的数组下标
-                        azimuth=t.state[0],        # 发送卡尔曼平滑后的位置
-                        elevation=t.state[1], 
+                        azimuth=t.state[0, 0],        # 发送卡尔曼平滑后的位置
+                        elevation=t.state[1, 0], 
                         distance=send_dist
                     )
+                    ui_send_total += 1
+                    ui_send_counter[int(t.id)] += 1
+
+            if (curr_time - stats_last_print) >= STATS_PRINT_INTERVAL:
+                top_id_text = "none"
+                if ui_send_counter:
+                    top_id_text = ", ".join([f"{tid}:{cnt}" for tid, cnt in ui_send_counter.most_common(8)])
+                print(
+                    f"[Stats] recv_objs_total={recv_obj_total}, recv_unique_boxes={len(recv_unique_boxes)} | "
+                    f"ui_send_total={ui_send_total}, ui_unique_ids={len(ui_send_counter)}, ui_id_counts={top_id_text}"
+                )
+                stats_last_print = curr_time
 
         except KeyboardInterrupt:
             break
@@ -839,6 +1239,13 @@ def main():
         imu.close()
     if 'gimbal' in locals():
         gimbal.close()
+    final_id_text = "none"
+    if ui_send_counter:
+        final_id_text = ", ".join([f"{tid}:{cnt}" for tid, cnt in ui_send_counter.most_common()])
+    print(
+        f"[Stats][Final] recv_objs_total={recv_obj_total}, recv_unique_boxes={len(recv_unique_boxes)} | "
+        f"ui_send_total={ui_send_total}, ui_unique_ids={len(ui_send_counter)}, ui_id_counts={final_id_text}"
+    )
 
 if __name__ == "__main__":
     main()
